@@ -42,6 +42,9 @@
     }
 
     .topf {
+      /* display: flex;
+      justify-content: center;
+      align-items: center; */
       width: 20px;
       height: 20px;
       background-color: orchid;
@@ -96,22 +99,17 @@
   </div>
   <script>
 
-    function getRelativeCoords(evt) {
-      var x = event.clientX;     // Get the horizontal coordinate
-      var y = event.clientY;     // Get the vertical coordinate
-      var coor = "X coords: " + x + ", Y coords: " + y;
-      console.log(coor);
-
-      return coor;
-    }
-
-
     var app = {
       hiddenBox: document.querySelector("#topf"),
       counter: 0,
       isWinner: false,
+      topf: {
+        x: 10,
+        y: 10
+      },
+      history: [],
       init: function () {
-        console.log('Init');
+        this.setTopf();
         this.setListener();
       },
       setListener: function () {
@@ -127,11 +125,12 @@
         document.querySelector(".spielfeld")
           .addEventListener("click", function (event) {
             if (!scope.isWinner) {
-              // var coords = getRelativeCoords(event);
-              // console.log(coords);
-
+              if(scope.counter){
+                scope.getHinweis(event);
+              }
               scope.incrementCounter();
-              console.log('[Spielfeld] clicked: ', scope.counter);
+
+              // console.log('[Spielfeld] clicked: ', scope.counter);
             }
           });
       },
@@ -141,19 +140,40 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
       },
       setTopf: function () {
-        var coordX = getRandomIntInclusive(10, 590);
-        var coordY = getRandomIntInclusive(10, 490);
-        console.log(coordX, coordY);
+        this.topf.x = this.getRandomIntInclusive(0, 580);
+        this.topf.y = this.getRandomIntInclusive(0, 480);
+        
+        this.hiddenBox.style.top = this.topf.y;
+        this.hiddenBox.style.left = this.topf.x;
       },
       showWinner: function () {
         document.querySelector(".nachricht .title").classList.remove('hidden');
         this.hiddenBox.style.opacity = 1;
         this.isWinner = true;
-        console.log('[Topf] visible!');
+        document.querySelector(".spielstand .hinweis .kalt").classList.add('hidden');
+        document.querySelector(".spielstand .hinweis .heiss").classList.add('hidden');
+        // console.log('[Topf] visible!');
       },
       incrementCounter: function () {
         this.counter++;
         document.querySelector(".spielstand .klicks .counter").innerText = this.counter;
+      },
+      getHinweis: function (evt) {
+        var hinweis = this.getHinweisByCoords(evt.screenX, evt.screenY);
+        var lastItem = this.history[this.history.length-2];
+        
+        if (hinweis<lastItem) {
+          document.querySelector(".spielstand .hinweis .heiss").classList.remove('hidden');
+          document.querySelector(".spielstand .hinweis .kalt").classList.add('hidden')
+        } else {
+          document.querySelector(".spielstand .hinweis .kalt").classList.remove('hidden');
+          document.querySelector(".spielstand .hinweis .heiss").classList.add('hidden');
+        }
+      },
+      getHinweisByCoords: function (clickX, clickY) {
+        var temp = Math.sqrt(Math.pow((this.topf.x - clickX), 2) + Math.pow((this.topf.y - clickY), 2));
+        this.history.push(temp);
+        return temp;
       }
     }
 
