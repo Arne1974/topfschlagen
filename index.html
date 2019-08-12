@@ -3,6 +3,10 @@
 <head>
   <title>Kartenacherei</title>
   <style>
+    body {
+      margin: 0;
+    }
+
     .spiel {
       display: flex;
       max-width: 980px;
@@ -79,7 +83,7 @@
     <div class="spielstand column space-around">
       <div class="klicks space-around">
         <div class="title">Klicks</div>
-        <div class="counter">000</div>
+        <div class="counter">0</div>
       </div>
       <div class="hinweis column space-between">
         <div class="kalt center hidden">Kalt</div>
@@ -91,24 +95,69 @@
     </div>
   </div>
   <script>
-    var hiddenBox = document.querySelector("#topf");
-    var counter = 0;
-    var isWinner = false;
-    document.querySelector(".spielfeld #topf")
-      .addEventListener("click", function (event) {
-        if (!isWinner) {
-          hiddenBox.style.opacity = 1;
-          isWinner = true;
-          console.log('[Topf] visible!');
-        }
-      });
-    document.querySelector(".spielfeld")
-      .addEventListener("click", function (event) {
-        if (!isWinner) {
-          counter++;
-          console.log('[Spielfeld] clicked: ', counter);
-        }
-      });
+
+    function getRelativeCoords(evt) {
+      var x = event.clientX;     // Get the horizontal coordinate
+      var y = event.clientY;     // Get the vertical coordinate
+      var coor = "X coords: " + x + ", Y coords: " + y;
+      console.log(coor);
+
+      return coor;
+    }
+
+
+    var app = {
+      hiddenBox: document.querySelector("#topf"),
+      counter: 0,
+      isWinner: false,
+      init: function () {
+        console.log('Init');
+        this.setListener();
+      },
+      setListener: function () {
+        var scope = this;
+
+        document.querySelector(".spielfeld #topf")
+          .addEventListener("click", function (event) {
+            if (!scope.isWinner) {
+              scope.showWinner();
+            }
+          });
+
+        document.querySelector(".spielfeld")
+          .addEventListener("click", function (event) {
+            if (!scope.isWinner) {
+              // var coords = getRelativeCoords(event);
+              // console.log(coords);
+
+              scope.incrementCounter();
+              console.log('[Spielfeld] clicked: ', scope.counter);
+            }
+          });
+      },
+      getRandomIntInclusive: function (min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      },
+      setTopf: function () {
+        var coordX = getRandomIntInclusive(10, 590);
+        var coordY = getRandomIntInclusive(10, 490);
+        console.log(coordX, coordY);
+      },
+      showWinner: function () {
+        document.querySelector(".nachricht .title").classList.remove('hidden');
+        this.hiddenBox.style.opacity = 1;
+        this.isWinner = true;
+        console.log('[Topf] visible!');
+      },
+      incrementCounter: function () {
+        this.counter++;
+        document.querySelector(".spielstand .klicks .counter").innerText = this.counter;
+      }
+    }
+
+    app.init();
   </script>
 </body>
 
