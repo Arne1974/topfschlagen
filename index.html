@@ -28,6 +28,10 @@
       justify-content: flex-start;
     }
 
+    .flex-end {
+      justify-content: flex-end;
+    }
+
     .column {
       -webkit-flex-direction: column;
       flex-direction: column;
@@ -42,14 +46,15 @@
     }
 
     .topf {
-      /* display: flex;
+      display: flex;
       justify-content: center;
-      align-items: center; */
+      align-items: center;
       width: 20px;
       height: 20px;
       background-color: orchid;
       position: relative;
       opacity: 0;
+      transform: translate(-10px, -10px);
     }
 
     .spielstand {
@@ -63,13 +68,18 @@
     .spielstand .klicks,
     .spielstand .hinweis,
     .spielstand .hinweis>*,
-    .spielstand .nachricht>* {
+    .spielstand .nachricht>*,
+    .spielstand .control {
       display: flex;
     }
 
     .spielstand .hinweis,
     .spielstand .nachricht {
       min-height: 37px;
+    }
+
+    .spielstand .control .again {
+      margin-right: 12px;
     }
 
     .hidden {
@@ -95,85 +105,105 @@
       <div class="nachricht">
         <span class="title center hidden">Gewonnen!</span>
       </div>
+      <div class="control flex-end">
+        <button onclick="location.reload()" class="again hidden">Nochmal versuchen?</button>
+      </div>
     </div>
   </div>
   <script>
 
     var app = {
       hiddenBox: document.querySelector("#topf"),
-      counter: 0,
       isWinner: false,
       topf: {
-        x: 10,
-        y: 10
+        x: 0,
+        y: 0
       },
       history: [],
+      showHelper: true,
       init: function () {
         this.setTopf();
         this.setListener();
       },
+      setTopf: function () {
+        this.topf.x = this.getRandomIntInclusive(10, 590);
+        this.topf.y = this.getRandomIntInclusive(10, 490);
+        this.consoleHelper('[Topf] positioned: ' + this.topf.x + ', ' + this.topf.y);
+      },
       setListener: function () {
         var scope = this;
-
-        document.querySelector(".spielfeld #topf")
-          .addEventListener("click", function (event) {
-            if (!scope.isWinner) {
-              scope.showWinner();
-            }
-          });
 
         document.querySelector(".spielfeld")
           .addEventListener("click", function (event) {
             if (!scope.isWinner) {
-              if(scope.counter){
-                scope.getHinweis(event);
-              }
-              scope.incrementCounter();
-
-              // console.log('[Spielfeld] clicked: ', scope.counter);
+              scope.getHinweis(event);
             }
           });
+      },
+      getHinweis: function (evt) {
+        var lastItem = this.history[this.history.length - 1];
+        var item = this.getDistanceByCoords(evt.pageX, evt.pageY);
+
+        this.consoleHelper('[Hinweis]: ' + evt.pageX + ', ' + evt.pageY);
+
+        if (this.history.length) {
+          if (item < lastItem) {
+            document.querySelector(".spielstand .hinweis .heiss").classList.remove('hidden');
+            document.querySelector(".spielstand .hinweis .kalt").classList.add('hidden')
+          } else {
+            document.querySelector(".spielstand .hinweis .kalt").classList.remove('hidden');
+            document.querySelector(".spielstand .hinweis .heiss").classList.add('hidden');
+          }
+        }
+
+        this.animateCounter();
+
+        if (this.getMatch(evt.pageX, evt.pageY)) {
+          this.showWinner();
+        }
+      },
+      getMatch: function (clickedX, clickedY) {
+        var xLeft = this.topf.x - 10;
+        var xRight = this.topf.x + 9;
+        var yTop = this.topf.y - 10;
+        var yBottom = this.topf.y + 9;
+
+        if ((clickedX > xLeft && clickedX < xRight) && (clickedY > yTop && clickedY < yBottom)) {
+          return 1;
+        }
+        return 0;
+      },
+      showWinner: function () {
+        this.isWinner = true;
+        this.hiddenBox.style.opacity = 1;
+        this.hiddenBox.style.top = this.topf.y;
+        this.hiddenBox.style.left = this.topf.x;
+
+        document.querySelector(".nachricht .title").classList.remove('hidden');
+        document.querySelector(".spielstand .hinweis .kalt").classList.add('hidden');
+        document.querySelector(".spielstand .hinweis .heiss").classList.add('hidden');
+        document.querySelector(".spielstand .control .again").classList.remove('hidden');
+
+        this.consoleHelper('[Topf] visible!');
+      },
+      getDistanceByCoords: function (clickX, clickY) {
+        var temp = Math.sqrt(Math.pow((this.topf.x - clickX), 2) + Math.pow((this.topf.y - clickY), 2));
+        this.history.push(temp);
+        return temp;
       },
       getRandomIntInclusive: function (min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
+
         return Math.floor(Math.random() * (max - min + 1)) + min;
       },
-      setTopf: function () {
-        this.topf.x = this.getRandomIntInclusive(0, 580);
-        this.topf.y = this.getRandomIntInclusive(0, 480);
-        
-        this.hiddenBox.style.top = this.topf.y;
-        this.hiddenBox.style.left = this.topf.x;
+      animateCounter: function () {
+        document.querySelector(".spielstand .klicks .counter").innerText = this.history.length;
       },
-      showWinner: function () {
-        document.querySelector(".nachricht .title").classList.remove('hidden');
-        this.hiddenBox.style.opacity = 1;
-        this.isWinner = true;
-        document.querySelector(".spielstand .hinweis .kalt").classList.add('hidden');
-        document.querySelector(".spielstand .hinweis .heiss").classList.add('hidden');
-        // console.log('[Topf] visible!');
-      },
-      incrementCounter: function () {
-        this.counter++;
-        document.querySelector(".spielstand .klicks .counter").innerText = this.counter;
-      },
-      getHinweis: function (evt) {
-        var hinweis = this.getHinweisByCoords(evt.screenX, evt.screenY);
-        var lastItem = this.history[this.history.length-2];
-        
-        if (hinweis<lastItem) {
-          document.querySelector(".spielstand .hinweis .heiss").classList.remove('hidden');
-          document.querySelector(".spielstand .hinweis .kalt").classList.add('hidden')
-        } else {
-          document.querySelector(".spielstand .hinweis .kalt").classList.remove('hidden');
-          document.querySelector(".spielstand .hinweis .heiss").classList.add('hidden');
+      consoleHelper: function(message){
+        if(this.showHelper) {
+          console.log(message);
         }
-      },
-      getHinweisByCoords: function (clickX, clickY) {
-        var temp = Math.sqrt(Math.pow((this.topf.x - clickX), 2) + Math.pow((this.topf.y - clickY), 2));
-        this.history.push(temp);
-        return temp;
       }
     }
 
