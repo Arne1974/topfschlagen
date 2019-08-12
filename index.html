@@ -1,0 +1,115 @@
+<html>
+
+<head>
+  <title>Kartenacherei</title>
+  <style>
+    .spiel {
+      display: flex;
+      max-width: 980px;
+    }
+
+    .space-between {
+      justify-content: space-between;
+    }
+
+    .space-around {
+      justify-content: space-around;
+    }
+
+    .center {
+      justify-content: center;
+    }
+
+    .flex-start {
+      justify-content: flex-start;
+    }
+
+    .column {
+      -webkit-flex-direction: column;
+      flex-direction: column;
+      float: left;
+    }
+
+    .spielfeld {
+      width: 600px;
+      height: 500px;
+      background-color: #e2e2e2;
+      position: relative;
+    }
+
+    .topf {
+      width: 20px;
+      height: 20px;
+      background-color: orchid;
+      position: relative;
+      opacity: 0;
+    }
+
+    .spielstand {
+      display: flex;
+      max-height: 250px;
+      width: 320px;
+      background-color: bisque;
+      font-size: 2em;
+    }
+
+    .spielstand .klicks,
+    .spielstand .hinweis,
+    .spielstand .hinweis>*,
+    .spielstand .nachricht>* {
+      display: flex;
+    }
+
+    .spielstand .hinweis,
+    .spielstand .nachricht {
+      min-height: 37px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="spiel space-between">
+    <div class="spielfeld">
+      <div class="topf" id="topf"></div>
+    </div>
+    <div class="spielstand column space-around">
+      <div class="klicks space-around">
+        <div class="title">Klicks</div>
+        <div class="counter">000</div>
+      </div>
+      <div class="hinweis column space-between">
+        <div class="kalt center hidden">Kalt</div>
+        <div class="heiss center hidden">Heiss</div>
+      </div>
+      <div class="nachricht">
+        <span class="title center hidden">Gewonnen!</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    var hiddenBox = document.querySelector("#topf");
+    var counter = 0;
+    var isWinner = false;
+    document.querySelector(".spielfeld #topf")
+      .addEventListener("click", function (event) {
+        if (!isWinner) {
+          hiddenBox.style.opacity = 1;
+          isWinner = true;
+          console.log('[Topf] visible!');
+        }
+      });
+    document.querySelector(".spielfeld")
+      .addEventListener("click", function (event) {
+        if (!isWinner) {
+          counter++;
+          console.log('[Spielfeld] clicked: ', counter);
+        }
+      });
+  </script>
+</body>
+
+</html>
